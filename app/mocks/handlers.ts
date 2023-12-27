@@ -1,4 +1,4 @@
-import { http, HttpResponse, delay } from 'msw';
+import { http, HttpResponse, delay, graphql } from 'msw';
 
 const reviews = [
   {
@@ -113,6 +113,36 @@ export const handlers = [
       firstName: 'John',
       lastName: 'Maverick',
       avatarUrl: 'https://i.pravatar.cc/100?img=12',
+    });
+  }),
+
+  /**
+      query ListReviews($movieId: ID!) {
+        reviews(movieId: $movieId) {
+          id
+          text
+          rating
+          author {
+            firstName
+            avatarUrl
+          }
+        }
+      }
+   */
+
+  graphql.query('ListReviews', ({ variables }) => {
+    const { movieId } = variables;
+
+    const movie = movies.find((movie) => {
+      return movie.id === movieId;
+    });
+
+    const reviews = movie?.reviews || [];
+
+    return HttpResponse.json({
+      data: {
+        reviews,
+      },
     });
   }),
 ];
