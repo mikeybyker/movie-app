@@ -73,6 +73,20 @@ export const handlers = [
     const url = new URL(request.url);
     const movieId = url.searchParams.get('movieId');
 
+    if (!movieId) {
+      return HttpResponse.json(
+        {
+          error: 'Missingg queryy parameters "movieId"',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (movieId === 'b2b7e2d9-8b2e-4b7a-9b8a-7f9a0d7f7e0e') {
+      return new HttpResponse(null, { status: 500 }); // message but json error :-(
+      // return HttpResponse.json({}, { status: 500 }); // no json error, but no message
+    }
+
     const recommendations = movies.filter((movie) => {
       return movie.id !== movieId;
     });
