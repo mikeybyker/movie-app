@@ -68,4 +68,8 @@ export const handlers = [
 
     return new HttpResponse('Not found', { status: 404 });
   }),
+
+  http.get('/api/recommendations', () => {
+    return HttpResponse.json(movies.slice(0, 2));
+  }),
 ];
