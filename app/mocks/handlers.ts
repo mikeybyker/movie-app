@@ -73,6 +73,8 @@ export const handlers = [
     const url = new URL(request.url);
     const movieId = url.searchParams.get('movieId');
 
+    return Response.error(); // Network error; a failed request
+
     if (!movieId) {
       return HttpResponse.json(
         {
