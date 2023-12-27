@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse, delay } from 'msw';
 
 const reviews = [
   {
@@ -50,8 +50,10 @@ const movies = [
 ];
 
 export const handlers = [
-  http.get('https://api.example.com/movies/featured', () => {
+  http.get('https://api.example.com/movies/featured', async () => {
     // console.log('Request happened!');
+    await delay(3000);
+
     return HttpResponse.json(movies);
   }),
 
@@ -69,11 +71,12 @@ export const handlers = [
     return new HttpResponse('Not found', { status: 404 });
   }),
 
-  http.get('/api/recommendations', ({ request }) => {
+  http.get('/api/recommendations', async ({ request }) => {
     const url = new URL(request.url);
     const movieId = url.searchParams.get('movieId');
 
-    return Response.error(); // Network error; a failed request
+    await delay(); // random delay if no param
+    // await delay('infinite'); // forever pending
 
     if (!movieId) {
       return HttpResponse.json(
