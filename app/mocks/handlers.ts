@@ -1,5 +1,50 @@
 import { http, HttpResponse, delay, graphql } from 'msw';
+import { graphql as executeGraphQL, buildSchema } from 'graphql';
 
+const schema = buildSchema(`
+type Movie {
+  id: ID!
+  title: String!
+  slug: String!
+  category: String!
+  releasedAt: String!
+  description: String!
+  imageUrl: String!
+}
+
+type Review {
+  id: ID!
+  text: String!
+  rating: Int!
+  author: User!
+}
+
+type User {
+  id: ID!
+  firstName: String!
+  avatarUrl: String!
+}
+
+input UserInput {
+  id: ID!
+  firstName: String!
+  avatarUrl: String!
+}
+
+input ReviewInput {
+  movieId: ID!
+  text: String!
+  rating: Int!
+}
+
+type Query {
+  reviews(movieId: ID!): [Review!]
+}
+
+type Mutation {
+  addReview(author: UserInput!, reviewInput: ReviewInput!): Review
+}
+`);
 const reviews = [
   {
     id: '04be0fb5-19f6-411c-9257-bcef6cd203c2',
@@ -130,21 +175,40 @@ export const handlers = [
       }
    */
 
-  graphql.query('ListReviews', ({ variables }) => {
-    const { movieId } = variables;
+  graphql.query('ListReviews', async ({ query, variables }) => {
+    const { errors, data } = await executeGraphQL({
+      schema,
+      source: query,
+      variableValues: variables,
+      rootValue: {
+        reviews(args) {
+          const movie = movies.find((movie) => {
+            return movie.id === args.movieId;
+          });
 
-    const movie = movies.find((movie) => {
-      return movie.id === movieId;
-    });
-
-    const reviews = movie?.reviews || [];
-
-    return HttpResponse.json({
-      data: {
-        reviews,
+          return movie?.reviews || [];
+        },
       },
     });
+
+    return HttpResponse.json({ errors, data });
   }),
+
+  // graphql.query('ListReviews', ({ variables }) => {
+  //   const { movieId } = variables;
+
+  //   const movie = movies.find((movie) => {
+  //     return movie.id === movieId;
+  //   });
+
+  //   const reviews = movie?.reviews || [];
+
+  //   return HttpResponse.json({
+  //     data: {
+  //       reviews,
+  //     },
+  //   });
+  // }),
 
   /**
     mutation AddReview($author: UserInput!, $reviewInput: ReviewInput!) {
