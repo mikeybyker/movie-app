@@ -52,7 +52,7 @@ const movies = [
 export const handlers = [
   http.get('https://api.example.com/movies/featured', async () => {
     // console.log('Request happened!');
-    await delay(3000);
+    // await delay(3000);
 
     return HttpResponse.json(movies);
   }),
@@ -75,7 +75,7 @@ export const handlers = [
     const url = new URL(request.url);
     const movieId = url.searchParams.get('movieId');
 
-    await delay(); // random delay if no param
+    // await delay(); // random delay if no param
     // await delay('infinite'); // forever pending
 
     if (!movieId) {
@@ -168,7 +168,15 @@ export const handlers = [
       return movie.id === movieId;
     });
 
-    if (!movie) return;
+    if (!movie) {
+      return HttpResponse.json({
+        errors: [
+          {
+            message: `Cannot find a movie by ID "${movieId}"`,
+          },
+        ],
+      });
+    }
 
     const newReview = {
       ...review,
