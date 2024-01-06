@@ -1,6 +1,8 @@
 import { http, HttpResponse, delay, graphql } from 'msw';
 import { graphql as executeGraphQL, buildSchema } from 'graphql';
 
+const customerService = graphql.link('https://api.example.com/review-service');
+
 const schema = buildSchema(`
 type Movie {
   id: ID!
@@ -158,6 +160,20 @@ export const handlers = [
       firstName: 'John',
       lastName: 'Maverick',
       avatarUrl: 'https://i.pravatar.cc/100?img=12',
+    });
+  }),
+
+  // scoped handlers
+  customerService.query('ListReviews', () => {
+    return HttpResponse.json({
+      data: {
+        serviceReviews: [
+          {
+            id: '45e41b3e-etc-etc',
+            message: 'Hello World',
+          },
+        ],
+      },
     });
   }),
 
