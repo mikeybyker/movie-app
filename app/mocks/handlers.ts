@@ -1,4 +1,4 @@
-import { http, HttpResponse, delay, graphql } from 'msw';
+import { http, HttpResponse, delay, graphql, passthrough } from 'msw';
 import { graphql as executeGraphQL, buildSchema } from 'graphql';
 
 const customerService = graphql.link('https://api.example.com/review-service');
@@ -132,6 +132,11 @@ export const handlers = [
         },
         { status: 400 }
       );
+    }
+
+    // can alternate on mock data or original depending on requested resource
+    if (movieId === '8061539f-f0d6-4187-843f-a25aadf948eb') {
+      return passthrough(); // will perform this intercepted request as is. This means that the client will receive the original data.
     }
 
     if (movieId === 'b2b7e2d9-8b2e-4b7a-9b8a-7f9a0d7f7e0e') {
