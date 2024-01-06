@@ -161,21 +161,7 @@ export const handlers = [
     });
   }),
 
-  /**
-      query ListReviews($movieId: ID!) {
-        reviews(movieId: $movieId) {
-          id
-          text
-          rating
-          author {
-            firstName
-            avatarUrl
-          }
-        }
-      }
-   */
-
-  graphql.query('ListReviews', async ({ query, variables }) => {
+  graphql.operation(async ({ query, variables }) => {
     const { errors, data } = await executeGraphQL({
       schema,
       source: query,
@@ -188,73 +174,32 @@ export const handlers = [
 
           return movie?.reviews || [];
         },
+        addReview(args) {
+          const { author, reviewInput } = args;
+          const { movieId, ...review } = reviewInput;
+
+          const movie = movies.find((movie) => {
+            return movie.id === movieId;
+          });
+
+          if (!movie) {
+            throw new Error(`Cannot find a movie by ID "${movieId}"`);
+          }
+
+          const newReview = {
+            ...review,
+            id: Math.random().toString(16).slice(2),
+            author,
+          };
+
+          const prevReviews = movie?.reviews || [];
+          movie.reviews = prevReviews.concat(newReview);
+
+          return newReview;
+        },
       },
     });
 
     return HttpResponse.json({ errors, data });
-  }),
-
-  // graphql.query('ListReviews', ({ variables }) => {
-  //   const { movieId } = variables;
-
-  //   const movie = movies.find((movie) => {
-  //     return movie.id === movieId;
-  //   });
-
-  //   const reviews = movie?.reviews || [];
-
-  //   return HttpResponse.json({
-  //     data: {
-  //       reviews,
-  //     },
-  //   });
-  // }),
-
-  /**
-    mutation AddReview($author: UserInput!, $reviewInput: ReviewInput!) {
-      addReview(author: $author, reviewInput: $reviewInput) {
-        id
-        text
-        author {
-          id
-          firstName
-          avatarUrl
-        }
-      }
-    }
-   */
-
-  graphql.mutation('AddReview', ({ variables }) => {
-    const { author, reviewInput } = variables;
-    const { movieId, ...review } = reviewInput;
-
-    const movie = movies.find((movie) => {
-      return movie.id === movieId;
-    });
-
-    if (!movie) {
-      return HttpResponse.json({
-        errors: [
-          {
-            message: `Cannot find a movie by ID "${movieId}"`,
-          },
-        ],
-      });
-    }
-
-    const newReview = {
-      ...review,
-      id: Math.random().toString(16).slice(2),
-      author,
-    };
-
-    const prevReviews = movie?.reviews || [];
-    movie.reviews = prevReviews.concat(newReview);
-
-    return HttpResponse.json({
-      data: {
-        addReview: newReview,
-      },
-    });
   }),
 ];
