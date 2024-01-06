@@ -1,4 +1,4 @@
-import { http, HttpResponse, delay, graphql, passthrough } from 'msw';
+import { bypass, http, HttpResponse, delay, graphql, passthrough } from 'msw';
 import { graphql as executeGraphQL, buildSchema } from 'graphql';
 
 const customerService = graphql.link('https://api.example.com/review-service');
@@ -97,6 +97,14 @@ const movies = [
 ];
 
 export const handlers = [
+  http.get('https://localhost:3000/api/featured', async ({ request }) => {
+    // without bypass would trigger infinate loop
+    const response = await fetch(bypass(request));
+    const originalMovies = await response.json();
+    console.log({ originalMovies });
+    return HttpResponse.json(originalMovies.concat(movies));
+  }),
+
   http.get('https://api.example.com/movies/featured', async () => {
     // console.log('Request happened!');
     // await delay(3000);
