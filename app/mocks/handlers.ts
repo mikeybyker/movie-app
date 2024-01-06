@@ -97,6 +97,28 @@ const movies = [
 ];
 
 export const handlers = [
+  http.get(`https://api.example.com/movies/:slug/stream`, async () => {
+    const videoResponse = await fetch(
+      'https://nickdesaulniers.github.io/netfix/demo/frag_bunny.mp4'
+    );
+
+    const videoStream = videoResponse.body;
+
+    const latencyStream = new TransformStream({
+      start() {},
+      async transform(chunk, controller) {
+        await delay(1500);
+        controller.enqueue(chunk);
+      },
+    });
+
+    // return videoResponse;
+    return new HttpResponse(
+      videoStream?.pipeThrough(latencyStream),
+      videoResponse // inherit status code and headers
+    );
+  }),
+
   http.get('https://localhost:3000/api/featured', async ({ request }) => {
     // without bypass would trigger infinate loop
     const response = await fetch(bypass(request));
